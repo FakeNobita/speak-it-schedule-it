@@ -109,18 +109,18 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="What would you like to accomplish today?"
-              className="text-lg py-4 px-6 border-0 bg-white/70 backdrop-blur-sm shadow-lg rounded-2xl placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300"
+              className="text-lg py-4 px-6 pr-16 border-0 bg-white/70 backdrop-blur-sm shadow-lg rounded-2xl placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300"
             />
             <Button
               type="button"
               onClick={isListening ? stopListening : startListening}
-              className={`absolute right-2 top-2 h-12 w-12 rounded-xl transition-all duration-300 ${
+              className={`absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl transition-all duration-300 ${
                 isListening 
                   ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse shadow-lg shadow-red-500/25' 
                   : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-500/25'
               }`}
             >
-              {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
             </Button>
           </div>
           
