@@ -5,11 +5,12 @@ import { Card } from '@/components/ui/card';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 
 interface VoiceInputProps {
-  onTranscript: (text: string) => void;
+  onTaskAdd: (description: string, dueDate?: Date) => void;
+  isListening: boolean;
+  setIsListening: (listening: boolean) => void;
 }
 
-export const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript }) => {
-  const [isListening, setIsListening] = useState(false);
+export const VoiceInput: React.FC<VoiceInputProps> = ({ onTaskAdd, isListening, setIsListening }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
@@ -35,7 +36,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onTranscript }) => {
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
       setIsProcessing(true);
-      onTranscript(transcript);
+      onTaskAdd(transcript);
       setTimeout(() => {
         setIsProcessing(false);
         setIsListening(false);
