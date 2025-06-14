@@ -4,22 +4,14 @@ import { ClerkProvider } from '@clerk/clerk-react'
 import App from './App.tsx'
 import './index.css'
 
-const PUBLISHABLE_KEY = "pk_test_dXByaWdodC1pbnNlY3QtNDIuY2xlcmsuYWNjb3VudHMuZGV2JA"
+const PUBLISHABLE_KEY = "pk_test_ZHJpdmluZy1hYXJkdmFyay0yOC5jbGVyay5hY2NvdW50cy5kZXYk"
 
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key")
 }
 
 createRoot(document.getElementById("root")!).render(
-  <ClerkProvider 
-    publishableKey={PUBLISHABLE_KEY}
-    appearance={{
-      baseTheme: undefined,
-      variables: {
-        colorPrimary: "#3b82f6"
-      }
-    }}
-  >
+  <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
     <App />
   </ClerkProvider>
 );

@@ -1,31 +1,15 @@
 
 import React from 'react';
-import { SignedIn, SignedOut, SignInButton, UserButton, useClerk } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Mic, LogIn, Loader2 } from 'lucide-react';
+import { Mic, LogIn } from 'lucide-react';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
 }
 
 export const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
-  const { loaded } = useClerk();
-
-  // Show loading state while Clerk is initializing
-  if (!loaded) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center">
-        <Card className="p-8 max-w-md w-full mx-4 bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-500" />
-            <p className="text-gray-600">Loading...</p>
-          </div>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <>
       <SignedOut>
