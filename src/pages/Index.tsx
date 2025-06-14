@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { VoiceInput } from '@/components/VoiceInput';
 import { TaskList } from '@/components/TaskList';
 import { DashboardStats } from '@/components/DashboardStats';
-import { Mic, CheckCircle, Clock, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AuthWrapper } from '@/components/AuthWrapper';
+import { CheckCircle, Clock, Plus, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 export interface Task {
@@ -13,37 +14,46 @@ export interface Task {
   completed: boolean;
   createdAt: Date;
   dueDate?: Date;
+  userId: string;
 }
 
 const Index = () => {
+  const { user } = useUser();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isListening, setIsListening] = useState(false);
 
   // Load tasks from localStorage on component mount
   useEffect(() => {
-    const savedTasks = localStorage.getItem('sayToPlanTasks');
-    if (savedTasks) {
-      const parsedTasks = JSON.parse(savedTasks).map((task: any) => ({
-        ...task,
-        createdAt: new Date(task.createdAt),
-        dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
-      }));
-      setTasks(parsedTasks);
+    if (user) {
+      const savedTasks = localStorage.getItem(`sayToPlanTasks_${user.id}`);
+      if (savedTasks) {
+        const parsedTasks = JSON.parse(savedTasks).map((task: any) => ({
+          ...task,
+          createdAt: new Date(task.createdAt),
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        }));
+        setTasks(parsedTasks);
+      }
     }
-  }, []);
+  }, [user]);
 
   // Save tasks to localStorage whenever tasks change
   useEffect(() => {
-    localStorage.setItem('sayToPlanTasks', JSON.stringify(tasks));
-  }, [tasks]);
+    if (user && tasks.length >= 0) {
+      localStorage.setItem(`sayToPlanTasks_${user.id}`, JSON.stringify(tasks));
+    }
+  }, [tasks, user]);
 
   const addTask = (description: string, dueDate?: Date) => {
+    if (!user) return;
+    
     const newTask: Task = {
       id: Date.now().toString(),
       description,
       completed: false,
       createdAt: new Date(),
       dueDate,
+      userId: user.id,
     };
     setTasks(prev => [newTask, ...prev]);
   };
@@ -71,18 +81,15 @@ const Index = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Header */}
+    <AuthWrapper>
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Welcome Section */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-blue-500 rounded-full">
-              <Mic className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-gray-800">Say to Plan</h1>
-          </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Organize your day with your voice. Simply speak your tasks and let us handle the rest.
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+            Welcome back, {user?.firstName || 'there'}! 👋
+          </h2>
+          <p className="text-xl text-gray-600">
+            What would you like to accomplish today?
           </p>
         </div>
 
@@ -94,36 +101,33 @@ const Index = () => {
         />
 
         {/* Voice Input Section */}
-        <Card className="p-8 mb-8 bg-white/70 backdrop-blur-sm border-0 shadow-lg">
-          <div className="text-center">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-              Add New Task
-            </h2>
-            <VoiceInput 
-              onTaskAdd={addTask}
-              isListening={isListening}
-              setIsListening={setIsListening}
-            />
-          </div>
-        </Card>
+        <div className="mb-8">
+          <VoiceInput 
+            onTaskAdd={addTask}
+            isListening={isListening}
+            setIsListening={setIsListening}
+          />
+        </div>
 
         {/* Task Lists */}
         <div className="space-y-8">
           {/* Pending Tasks */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="h-5 w-5 text-blue-500" />
-              <h2 className="text-xl font-semibold text-gray-800">
-                Pending Tasks ({pendingTasks.length})
-              </h2>
+          {pendingTasks.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Clock className="h-5 w-5 text-blue-500" />
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Pending Tasks ({pendingTasks.length})
+                </h2>
+              </div>
+              <TaskList 
+                tasks={pendingTasks}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+                onEdit={editTask}
+              />
             </div>
-            <TaskList 
-              tasks={pendingTasks}
-              onToggle={toggleTask}
-              onDelete={deleteTask}
-              onEdit={editTask}
-            />
-          </div>
+          )}
 
           {/* Completed Tasks */}
           {completedTasks.length > 0 && (
@@ -147,18 +151,38 @@ const Index = () => {
 
         {/* Empty State */}
         {tasks.length === 0 && (
-          <Card className="p-12 text-center bg-white/50 backdrop-blur-sm border-0">
-            <Plus className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-600 mb-2">
-              No tasks yet
-            </h3>
-            <p className="text-gray-500">
-              Click the microphone above and say your first task!
-            </p>
+          <Card className="p-12 text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg">
+            <div className="max-w-md mx-auto">
+              <div className="mb-6">
+                <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Plus className="h-10 w-10 text-white" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                Ready to get productive?
+              </h3>
+              <p className="text-gray-600 text-lg mb-6">
+                Click the microphone above and say your first task, or type it directly!
+              </p>
+              <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <TrendingUp className="h-4 w-4" />
+                  <span>Track progress</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="h-4 w-4" />
+                  <span>Set due dates</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CheckCircle className="h-4 w-4" />
+                  <span>Stay organized</span>
+                </div>
+              </div>
+            </div>
           </Card>
         )}
       </div>
-    </div>
+    </AuthWrapper>
   );
 };
 
