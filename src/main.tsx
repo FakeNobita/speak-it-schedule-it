@@ -4,7 +4,7 @@ import { ClerkProvider } from '@clerk/clerk-react'
 import App from './App.tsx'
 import './index.css'
 
-const PUBLISHABLE_KEY = "pk_test_ZHJpdmluZy1hYXJkdmFyay0yOC5jbGVyay5hY2NvdW50cy5kZXYk"
+const PUBLISHABLE_KEY = "pk_test_dXByaWdodC1pbnNlY3QtNDIuY2xlcmsuYWNjb3VudHMuZGV2JA"
 
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Clerk Publishable Key")
