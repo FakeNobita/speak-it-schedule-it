@@ -2,40 +2,13 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Mic, MicOff, Plus, Calendar } from 'lucide-react';
+import { Mic, MicOff, Plus, Calendar, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 interface VoiceInputProps {
   onTaskAdd: (description: string, dueDate?: Date) => void;
   isListening: boolean;
   setIsListening: (listening: boolean) => void;
-}
-
-// Extend the Window interface to include webkitSpeechRecognition
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-  
-  interface SpeechRecognition extends EventTarget {
-    continuous: boolean;
-    interimResults: boolean;
-    lang: string;
-    start(): void;
-    stop(): void;
-    onresult: (event: SpeechRecognitionEvent) => void;
-    onerror: (event: SpeechRecognitionErrorEvent) => void;
-    onend: () => void;
-  }
-  
-  interface SpeechRecognitionEvent extends Event {
-    results: SpeechRecognitionResultList;
-  }
-  
-  interface SpeechRecognitionErrorEvent extends Event {
-    error: string;
-  }
 }
 
 export const VoiceInput: React.FC<VoiceInputProps> = ({
@@ -111,67 +84,85 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
   };
 
   return (
-    <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
+    <Card className="relative overflow-hidden bg-gradient-to-br from-white via-blue-50/50 to-indigo-100/50 border-0 shadow-2xl backdrop-blur-sm">
+      {/* Decorative background elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+        <div className="absolute -top-10 -right-10 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl"></div>
+        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-400/10 rounded-full blur-2xl"></div>
+      </div>
+      
+      <div className="relative p-8">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-3 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl shadow-lg">
+            <Sparkles className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-800">Add New Task</h3>
+            <p className="text-sm text-gray-600">Speak or type your task</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="relative">
             <Input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="What would you like to do? (or click the mic to speak)"
-              className="text-lg py-3 border-blue-300 focus:border-blue-500 focus:ring-blue-500"
+              placeholder="What would you like to accomplish today?"
+              className="text-lg py-4 px-6 border-0 bg-white/70 backdrop-blur-sm shadow-lg rounded-2xl placeholder:text-gray-500 focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300"
             />
-          </div>
-          <div className="flex gap-2">
             <Button
               type="button"
               onClick={isListening ? stopListening : startListening}
-              className={`px-6 py-3 ${
+              className={`absolute right-2 top-2 h-12 w-12 rounded-xl transition-all duration-300 ${
                 isListening 
-                  ? 'bg-red-500 hover:bg-red-600 animate-pulse' 
-                  : 'bg-blue-500 hover:bg-blue-600'
+                  ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 animate-pulse shadow-lg shadow-red-500/25' 
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg shadow-blue-500/25'
               }`}
             >
               {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
             </Button>
           </div>
-        </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Due Date (Optional)
+              </label>
+              <div className="relative">
+                <Input
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="py-3 px-4 border-0 bg-white/70 backdrop-blur-sm shadow-lg rounded-xl focus:ring-2 focus:ring-blue-500/50 focus:bg-white transition-all duration-300"
+                />
+                <Calendar className="absolute right-3 top-3 h-5 w-5 text-gray-400" />
+              </div>
+            </div>
+            <Button 
+              type="submit" 
+              disabled={!inputText.trim()}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-8 py-3 font-semibold text-white rounded-xl shadow-lg shadow-green-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Add Task
+            </Button>
+          </div>
+        </form>
         
-        <div className="flex flex-col sm:flex-row gap-4 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Due Date (Optional)
-            </label>
-            <div className="relative">
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="border-blue-300 focus:border-blue-500 focus:ring-blue-500"
-              />
-              <Calendar className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+        {isListening && (
+          <div className="mt-6 text-center">
+            <div className="inline-flex items-center gap-3 px-6 py-3 bg-red-500/10 backdrop-blur-sm rounded-2xl border border-red-200/50">
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              </div>
+              <span className="text-red-700 font-medium">Listening... Speak now!</span>
             </div>
           </div>
-          <Button 
-            type="submit" 
-            disabled={!inputText.trim()}
-            className="bg-green-500 hover:bg-green-600 px-8 py-3 font-semibold"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
-        </div>
-      </form>
-      
-      {isListening && (
-        <div className="mt-4 text-center">
-          <div className="inline-flex items-center gap-2 text-red-600 font-medium">
-            <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-            Listening... Speak now!
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </Card>
   );
 };
